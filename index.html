@@ -141,6 +141,7 @@ footer p{margin:0 0 6px}
   var SNAPSHOT_DATE='2026-11-05';
   var TABS={midreview:{gid:'0',snapshot:'data/midreview.csv'}, a1:{gid:'1681716343',snapshot:'data/assignment1.csv'}};
   var A1_META='https://genenv.github.io/arch540-a1-toolkit/projects.json';
+  var DRIVE_FILES='data/drive_folder.json', REPO_PAGES='data/repo_pages.json', REVIEW_CLIPS='data/review_clips.json'; // file list of the shared Drive folder (refresh_data.sh): fills a video or thumbnail a student uploaded but did not paste into the sheet
   var CONFIG={formAction:'https://docs.google.com/forms/d/e/1FAIpQLSfrFx3kPWrOba2Fb4c7nvTuhs9LC45DHTB-zfcLDQGyZkg/formResponse',
     entries:{tool:'entry.1143608261',comment:'entry.1356044535',name:'entry.1132512406'},
     sheetCsv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTu3LV1OADLg52bORDu-wdahmsu5QZWdogK7zbKRX5KFYX1Xwv7r3Cr-KOm8yyko38dr3cIgO4EQnWW/pub?gid=1805454884&single=true&output=csv'};
@@ -153,6 +154,18 @@ footer p{margin:0 0 6px}
   function lines(s){ return (s||'').split(/\r?\n/).map(function(x){ return x.trim(); }).filter(Boolean); }
   function parseLinks(s){ return lines(s).map(function(l){ var m=/^(.*?):\s*(https?:\/\/\S+)$/.exec(l); return m?{label:m[1].trim(),url:m[2]}:{label:l,url:l}; }); }
   function parseCSV(s){ var rows=[],row=[],f='',q=false; for(var i=0;i<s.length;i++){ var c=s[i]; if(q){ if(c=='"'){ if(s[i+1]=='"'){f+='"';i++;} else q=false; } else f+=c; } else { if(c=='"') q=true; else if(c==','){row.push(f);f='';} else if(c=='\n'||c=='\r'){ if(c=='\r'&&s[i+1]=='\n') i++; row.push(f); rows.push(row); row=[]; f=''; } else f+=c; } } if(f!==''||row.length){row.push(f);rows.push(row);} return rows; }
+  // Folder fallback: a file counts as the student's when every token of the name ("Jenna Bruggeman") is a segment of the file name ("Jenna_Bruggeman_midreview.mp4").
+  function nameTokens(s){ return (s||'').toLowerCase().split(/[^a-z0-9]+/).filter(Boolean); }
+  function fromFolder(files,student,kind){
+    var toks=nameTokens(student), hits=[]; if(!toks.length) return '';
+    for(var i=0;i<files.length;i++){ var f=files[i], isVideo=/\.(mp4|mov|m4v|webm)$/i.test(f.name), isImg=/\.(png|jpe?g|webp|gif)$/i.test(f.name);
+      if((kind==='video'&&!isVideo)||(kind==='thumb'&&!isImg)) continue;
+      var segs=nameTokens(f.name); if(toks.every(function(t){ return segs.indexOf(t)>=0; })) hits.push(f); }
+    hits.sort(function(a,b){ return (/clip/i.test(a.name)?1:0)-(/clip/i.test(b.name)?1:0); });
+    return hits.length?'https://drive.google.com/file/d/'+hits[0].id+'/view':'';
+  }
+  // A Drive file that is not shared publicly has no thumbnail; loading it as an image tells us before the player is built. Slow answers count as accessible.
+  function probe(id){ return new Promise(function(res){ var done=false, im=new Image(); function end(v){ if(!done){ done=true; clearTimeout(t); res(v); } } var t=setTimeout(function(){ end(true); },5000); im.onload=function(){ end(true); }; im.onerror=function(){ end(false); }; im.src='https://drive.google.com/thumbnail?id='+id+'&sz=w64'; }); }
   function col(h,words){ for(var j=0;j<words.length;j++){ for(var i=0;i<h.length;i++){ if(h[i].indexOf(words[j])>=0) return i; } } return -1; }
   function g(r,i){ return i>=0?(r[i]||'').trim():''; }
   // Students sometimes paste a GitHub page title ("owner/repo: description") or their GitHub Pages address into the repository cell.
@@ -172,8 +185,9 @@ footer p{margin:0 0 6px}
 
   function player(p,emptyText){
     var box=el('div','player'); var id=driveId(p.video);
+    if(id&&p.videoOk===false){ id=null; }
     if(id){ var f=document.createElement('iframe'); f.src='https://drive.google.com/file/d/'+id+'/preview'; f.allow='autoplay; fullscreen'; f.allowFullscreen=true; f.loading='lazy'; f.title=p.title+' · video'; box.appendChild(f); }
-    else if(p.video){ var v=document.createElement('video'); v.controls=true; v.preload='none'; v.playsInline=true; if(p.poster) v.poster=p.poster; var s=document.createElement('source'); s.src=p.video; s.type='video/mp4'; v.appendChild(s); box.appendChild(v); }
+    else if(p.video&&!driveId(p.video)){ var v=document.createElement('video'); v.controls=true; v.preload='none'; v.playsInline=true; if(p.poster) v.poster=p.poster; var s=document.createElement('source'); s.src=p.video; s.type='video/mp4'; v.appendChild(s); box.appendChild(v); }
     else if(p.poster){ var im=document.createElement('img'); im.src=p.poster; im.alt=''; im.loading='lazy'; im.onerror=function(){ box.className+=' empty'; box.textContent=emptyText; }; box.appendChild(im); }
     else { box.className+=' empty'; box.textContent=emptyText; }
     return box;
@@ -197,7 +211,7 @@ footer p{margin:0 0 6px}
     var art=el('article'); art.id=slug;
     var head=el('div','head'); head.appendChild(el('h3',p.todo?'todo':null,p.title)); if(!p.todo) head.appendChild(el('span','who',p.student)); art.appendChild(head);
     if(p.subtitle) art.appendChild(el('p','sub',p.subtitle));
-    var cols=el('div','cols'); var left=el('div'); left.appendChild(player(p,p.todo?'Submission to come':'Presentation video to come')); cols.appendChild(left);
+    var cols=el('div','cols'); var left=el('div'); left.appendChild(player(p,p.todo?'Submission to come':(p.videoOk===false?'Video not shared publicly yet':'Presentation video to come'))); cols.appendChild(left);
     var right=el('div');
     if(p.todo){ right.appendChild(el('p','todo-text','Submission to come.')); }
     else {
@@ -205,6 +219,8 @@ footer p{margin:0 0 6px}
       if(p.app) acts.appendChild(link(opts.appLabel,p.app,'btn'));
       if(p.repo) acts.appendChild(link('Repository',p.repo,'sec'));
       (p.links||[]).forEach(function(l){ acts.appendChild(link(l.label,l.url,'sec')); });
+      if(p.videoOk===false&&p.video){ acts.appendChild(link('Video on Drive',p.video,'sec')); acts.appendChild(el('span','note','not shared publicly yet')); }
+      if(p.fromReview) acts.appendChild(el('span','note','Clip from the mid-review recording'));
       if(p.note) acts.appendChild(el('span','note',p.note));
       if(acts.children.length) right.appendChild(acts);
       if(p.brief) right.appendChild(el('blockquote',null,p.brief));
@@ -225,11 +241,14 @@ footer p{margin:0 0 6px}
   }
 
   // Mid-review tab: Name · Project title · Proposal · Repo URL · App URL · Video link · Thumbnail link · Notes
-  function midreviewItems(rows){
+  function normUrl(u){ return (u||'').toLowerCase().replace(/\/+$/,''); }
+  function midreviewItems(rows,files,pages){
     var h=rows[0].map(function(x){ return x.toLowerCase().trim(); });
     var iName=col(h,['name']), iTitle=col(h,['project title','title']), iProp=col(h,['proposal']), iRepo=col(h,['repo']), iApp=col(h,['app']), iVideo=col(h,['video']), iShot=col(h,['thumbnail','screenshot','image']), iNotes=col(h,['notes']);
     return rows.slice(1).map(function(r){
       var student=g(r,iName), title=g(r,iTitle), rl=repoLinks(g(r,iRepo),g(r,iApp)), video=g(r,iVideo), shot=g(r,iShot), proposal=g(r,iProp);
+      if(!video) video=fromFolder(files,student,'video'); if(!shot) shot=fromFolder(files,student,'thumb');
+      if(!rl.app&&rl.repo){ for(var k in pages){ if(normUrl(k)===normUrl(rl.repo)) rl.app=pages[k]; } }
       var todo=!(title||proposal||video||rl.repo||rl.app);
       var untitled=!title||title.toLowerCase()===student.toLowerCase(); if(untitled) title=todo?student:'(title to come)';
       return {student:student,title:title,untitled:untitled,proposal:proposal,repo:rl.repo,app:rl.app,video:video,poster:imageUrl(shot)||imageUrl(video),note:g(r,iNotes),todo:todo,key:title+' (mid-review)'};
@@ -278,13 +297,21 @@ footer p{margin:0 0 6px}
     var cl=document.getElementById('crosslist'); (m.cross_cutting||[]).forEach(function(b){ cl.appendChild(el('li',null,b)); }); if(cl.children.length) document.getElementById('cross').hidden=false;
   }).catch(function(){});
 
-  Promise.all([loadTab(TABS.midreview),loadTab(TABS.a1)]).then(function(res){
+  Promise.all([loadTab(TABS.midreview),loadTab(TABS.a1),fetch(DRIVE_FILES).then(function(r){ return r.json(); }).then(function(j){ return j.files||[]; }).catch(function(){ return []; }),
+    fetch(REPO_PAGES).then(function(r){ return r.json(); }).then(function(j){ return j.pages||{}; }).catch(function(){ return {}; }),
+    fetch(REVIEW_CLIPS).then(function(r){ return r.json(); }).then(function(j){ return j.clips||[]; }).catch(function(){ return []; })]).then(function(res){
     if(!res[0].live) fallbackNote('midreview');
     if(!res[1].live) fallbackNote('a1');
-    renderList(midreviewItems(res[0].rows),'midreview',{appLabel:'Open the app'});
-    renderList(a1Items(res[1].rows),'a1',{appLabel:'Open the tool'});
-    comments(); currentSection();
-    if(location.hash){ var t=document.getElementById(location.hash.slice(1)); if(t) t.scrollIntoView(); }
+    var mid=midreviewItems(res[0].rows,res[2],res[3]), clips=res[4];
+    return Promise.all(mid.map(function(p){ var id=driveId(p.video); return id?probe(id).then(function(ok){ p.videoOk=ok; }):Promise.resolve(); })).then(function(){
+      mid.forEach(function(p){ if(p.video&&p.videoOk!==false) return; var c=clips.filter(function(c){ return nameTokens(c.student).join(' ')===nameTokens(p.student).join(' '); })[0]; if(c&&c.video){ p.video=c.video; p.videoOk=undefined; p.fromReview=true; if(c.poster) p.poster=c.poster; p.todo=false; } });
+      function ready(p){ return !p.todo&&p.video&&p.videoOk!==false; }
+      mid=mid.filter(ready).concat(mid.filter(function(p){ return !ready(p); }));
+      renderList(mid,'midreview',{appLabel:'Open the app'});
+      renderList(a1Items(res[1].rows),'a1',{appLabel:'Open the tool'});
+      comments(); currentSection();
+      if(location.hash){ var t=document.getElementById(location.hash.slice(1)); if(t) t.scrollIntoView(); }
+    });
   }).catch(function(){ document.getElementById('midreview-entries').appendChild(el('p','status-line','Could not load the submissions.')); });
 })();
 </script>
