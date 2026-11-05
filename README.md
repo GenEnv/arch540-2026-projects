@@ -1,6 +1,6 @@
 # ARCH 540 · Student work (Fall 2026)
 
-Page: https://genenv.github.io/arch540-final-project/
+Page: https://genenv.github.io/arch540-2026-projects/ (repository renamed from arch540-final-project on 2026-11-05; the old Pages address no longer serves)
 
 One page, two sections, both read at load time from the class submissions sheet ("ARCH540 Mid-review submissions", Google Sheets, UBC account):
 
