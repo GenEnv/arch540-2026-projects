@@ -40,5 +40,17 @@ for r in rows[1:]:
 json.dump({"updated": datetime.date.today().isoformat(), "pages": pages}, open(sys.argv[2], 'w'), indent=1)
 print(len(pages), "repositories with a GitHub Pages site")
 PY
+# Which Drive files linked in the Mid-review tab are not shared publicly (no thumbnail for anonymous requests): the page shows those as "not shared publicly yet"
+python3 -I - data/midreview.csv data/drive_access.json <<'PY'
+import sys, csv, re, json, subprocess, datetime
+rows = list(csv.reader(open(sys.argv[1], encoding='utf-8')))
+ids = sorted(set(m for r in rows[1:] for cell in r for m in re.findall(r'drive\.google\.com/(?:file/d/|open\?id=|uc\?id=)([\w-]+)', cell)))
+private = []
+for i in ids:
+    out = subprocess.run(['curl', '-sL', '-o', '/dev/null', '-w', '%{http_code} %{content_type}', f'https://drive.google.com/thumbnail?id={i}&sz=w64'], capture_output=True, text=True).stdout
+    if not (out.startswith('200') and 'image/' in out): private.append(i)
+json.dump({"updated": datetime.date.today().isoformat(), "checked": len(ids), "private": private}, open(sys.argv[2], 'w'), indent=1)
+print(len(ids), "Drive files checked,", len(private), "not public")
+PY
 sed -i '' "s/var SNAPSHOT_DATE='[0-9-]*'/var SNAPSHOT_DATE='$(date +%Y-%m-%d)'/" index.html
 wc -l data/*.csv

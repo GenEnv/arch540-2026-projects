@@ -1,5 +1,26 @@
 {
  "updated": "2026-11-05",
- "note": "Clips cut from the mid-review recording for students without an accessible video of their own. student = name as in the sheet; video = direct mp4 URL; poster = image URL.",
- "clips": []
+ "note": "Clips cut from the mid-review recording (October 23, 2026) for students without an accessible video of their own; pitch only. The page uses a clip only when the sheet and the Drive folder give nothing playable. student = name as in the sheet; video and poster = files in this repository (video/, img/).",
+ "clips": [
+  {
+   "student": "Claudio Cabana",
+   "video": "video/Claudio_Cabana_midreview.mp4",
+   "poster": "img/Claudio_Cabana_poster.jpg"
+  },
+  {
+   "student": "Joseph Tong",
+   "video": "video/Joseph_Tong_midreview.mp4",
+   "poster": "img/Joseph_Tong_poster.jpg"
+  },
+  {
+   "student": "Bridgette Kelly",
+   "video": "video/Bridgette_Kelly_midreview.mp4",
+   "poster": "img/Bridgette_Kelly_poster.jpg"
+  },
+  {
+   "student": "Kaili Sun",
+   "video": "video/Kaili_Sun_midreview.mp4",
+   "poster": "img/Kaili_Sun_poster.jpg"
+  }
+ ]
 }

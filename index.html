@@ -29,14 +29,21 @@ a:hover{color:var(--accent)}
 .topbar nav{display:flex;gap:4px;flex-wrap:wrap}
 .topbar nav a{text-decoration:none;color:var(--muted);padding:6px 12px;border-radius:999px;font-size:15px}
 .topbar nav a:hover{color:var(--fg);background:var(--tint)}
-.topbar nav a.current{color:var(--accent-ink);background:var(--tint);font-weight:500}
+.topbar nav a.current{color:#fff;background:var(--accent);font-weight:500}
+.tabs{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 4px}
+.tabs a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:11px 18px;font-size:16px;font-weight:500;line-height:1.2}
+.tabs a:hover{border-color:var(--accent);color:var(--fg)}
+.tabs a.current{background:var(--accent);border-color:var(--accent);color:#fff}
+.tabs a .n{font-weight:400;opacity:.8;font-size:14px}
+section.part[hidden]{display:none}
+@media (max-width:600px){.topbar .brand{display:none}.topbar nav{margin-left:auto}}
 
 header.page{padding-block:44px 8px}
 .kicker{margin:0 0 8px;color:var(--muted);font-size:15px}
 h1{font-family:var(--display);font-weight:700;font-size:clamp(34px,5vw,54px);line-height:1.05;margin:0 0 14px;letter-spacing:-.01em}
 .lede{margin:0;max-width:66ch}
 
-section.part{padding-block:40px 8px}
+section.part{padding-block:28px 8px}
 section.part>h2{font-family:var(--display);font-weight:700;font-size:clamp(26px,3.4vw,36px);line-height:1.1;margin:0 0 6px;letter-spacing:-.005em}
 section.part>.meta{margin:0 0 14px;color:var(--muted)}
 section.part>.intro{margin:0 0 26px;max-width:66ch}
@@ -101,7 +108,7 @@ footer p{margin:0 0 6px}
 <body>
 <div class="topbar"><div class="wrap">
   <a class="brand" href="#top">ARCH 540 · Student work</a>
-  <nav aria-label="Sections"><a href="#midreview" data-for="midreview">Final project · Mid-review</a><a href="#a1" data-for="a1">Assignment 1 · Regulation toolkit</a></nav>
+  <nav aria-label="Sections"><a href="#midreview" data-tab="midreview">Mid-review</a><a href="#a1" data-tab="a1">Assignment 1</a></nav>
 </div></div>
 
 <div class="wrap" id="top">
@@ -109,9 +116,10 @@ footer p{margin:0 0 6px}
   <p class="kicker">ARCH 540 Designing the Design · UBC School of Architecture and Landscape Architecture · Fall 2026</p>
   <h1>Student work</h1>
   <p class="lede">In ARCH 540 students build tools for design with AI: first a small tool on one Vancouver regulation, then a final project on a workflow of their own choosing. This page collects the work shown at the two reviews so far. Each entry is written and kept up to date by the student.</p>
+  <div class="tabs" role="tablist" aria-label="Reviews"><a role="tab" href="#midreview" data-tab="midreview">Final project · Mid-review <span class="n" id="n-midreview"></span></a><a role="tab" href="#a1" data-tab="a1">Assignment 1 · Vancouver Regulation Toolkit <span class="n" id="n-a1"></span></a></div>
 </header>
 
-<section class="part" id="midreview">
+<section class="part" id="midreview" role="tabpanel">
   <h2>Final project: mid-review</h2>
   <p class="meta">October 23, 2026 · final review December 10, 2026</p>
   <p class="intro">For the final project each student chose a real workflow in architecture, landscape or a neighbouring practice, studied how it is done today and which tools already exist for it, and proposed a tool that AI makes possible. Each entry has the student’s proposal, the repository and the app where one exists, and the presentation from the mid-review.</p>
@@ -119,7 +127,7 @@ footer p{margin:0 0 6px}
   <div id="midreview-entries"></div>
 </section>
 
-<section class="part" id="a1">
+<section class="part" id="a1" role="tabpanel">
   <h2>Assignment 1: Vancouver Regulation Toolkit</h2>
   <p class="meta">Reviewed October 2, 2026 · 15 tools</p>
   <p class="intro">Assignment 1 asked each student to take one piece of a Vancouver regulation or design guideline, understand it, and build a small interactive tool with AI that explains, computes and visualizes it. Each entry has the student’s own one-sentence brief, a link to the tool, the live demo from the review, and the discussion that followed.</p>
@@ -141,7 +149,7 @@ footer p{margin:0 0 6px}
   var SNAPSHOT_DATE='2026-11-05';
   var TABS={midreview:{gid:'0',snapshot:'data/midreview.csv'}, a1:{gid:'1681716343',snapshot:'data/assignment1.csv'}};
   var A1_META='https://genenv.github.io/arch540-a1-toolkit/projects.json';
-  var DRIVE_FILES='data/drive_folder.json', REPO_PAGES='data/repo_pages.json', REVIEW_CLIPS='data/review_clips.json'; // file list of the shared Drive folder (refresh_data.sh): fills a video or thumbnail a student uploaded but did not paste into the sheet
+  var DRIVE_FILES='data/drive_folder.json', REPO_PAGES='data/repo_pages.json', REVIEW_CLIPS='data/review_clips.json', DRIVE_ACCESS='data/drive_access.json'; // file list of the shared Drive folder (refresh_data.sh): fills a video or thumbnail a student uploaded but did not paste into the sheet
   var CONFIG={formAction:'https://docs.google.com/forms/d/e/1FAIpQLSfrFx3kPWrOba2Fb4c7nvTuhs9LC45DHTB-zfcLDQGyZkg/formResponse',
     entries:{tool:'entry.1143608261',comment:'entry.1356044535',name:'entry.1132512406'},
     sheetCsv:'https://docs.google.com/spreadsheets/d/e/2PACX-1vTu3LV1OADLg52bORDu-wdahmsu5QZWdogK7zbKRX5KFYX1Xwv7r3Cr-KOm8yyko38dr3cIgO4EQnWW/pub?gid=1805454884&single=true&output=csv'};
@@ -164,8 +172,6 @@ footer p{margin:0 0 6px}
     hits.sort(function(a,b){ return (/clip/i.test(a.name)?1:0)-(/clip/i.test(b.name)?1:0); });
     return hits.length?'https://drive.google.com/file/d/'+hits[0].id+'/view':'';
   }
-  // A Drive file that is not shared publicly has no thumbnail; loading it as an image tells us before the player is built. Slow answers count as accessible.
-  function probe(id){ return new Promise(function(res){ var done=false, im=new Image(); function end(v){ if(!done){ done=true; clearTimeout(t); res(v); } } var t=setTimeout(function(){ end(true); },5000); im.onload=function(){ end(true); }; im.onerror=function(){ end(false); }; im.src='https://drive.google.com/thumbnail?id='+id+'&sz=w64'; }); }
   function col(h,words){ for(var j=0;j<words.length;j++){ for(var i=0;i<h.length;i++){ if(h[i].indexOf(words[j])>=0) return i; } } return -1; }
   function g(r,i){ return i>=0?(r[i]||'').trim():''; }
   // Students sometimes paste a GitHub page title ("owner/repo: description") or their GitHub Pages address into the repository cell.
@@ -194,7 +200,7 @@ footer p{margin:0 0 6px}
   }
   function card(p,slug){
     var a=el('a','card'+(p.todo?' todo':'')); a.href='#'+slug;
-    var th=el('div','thumb'); if(p.poster){ var im=document.createElement('img'); im.src=p.poster; im.alt=''; im.loading='lazy'; im.onerror=function(){ im.remove(); }; th.appendChild(im); } else th.textContent=p.todo?'to come':'';
+    var th=el('div','thumb'); if(p.poster){ var im=document.createElement('img'); im.src=p.poster; im.alt=''; im.loading='lazy'; im.onerror=function(){ if(!im.dataset.retry&&driveId(p.poster)){ im.dataset.retry='1'; setTimeout(function(){ im.src=p.poster.replace('sz=w1200','sz=w1000'); },1500); } else im.remove(); }; th.appendChild(im); } else th.textContent=p.todo?'to come':'';
     a.appendChild(th);
     var cb=el('div','cb'); cb.appendChild(el('div','t',p.title)); cb.appendChild(el('div','s',p.todo?'Submission to come':p.student)); a.appendChild(cb);
     return a;
@@ -287,11 +293,14 @@ footer p{margin:0 0 6px}
     }).catch(function(){});
   }
 
-  function currentSection(){
-    var links=document.querySelectorAll('.topbar nav a'); var secs=['midreview','a1'].map(function(id){ return document.getElementById(id); });
-    function update(){ var y=window.scrollY+80, cur=null; secs.forEach(function(s){ if(s.offsetTop<=y) cur=s.id; }); links.forEach(function(a){ a.classList.toggle('current',a.dataset.for===cur); }); }
-    window.addEventListener('scroll',update,{passive:true}); update();
+  // Two tabs on one page: only the chosen review is shown; #a1 or #a1-<entry> opens the Assignment 1 tab, anything else the mid-review tab.
+  function tabFromHash(){ return /^#a1(-|$)/.test(location.hash)?'a1':'midreview'; }
+  function showTab(id){ ['midreview','a1'].forEach(function(k){ document.getElementById(k).hidden=(k!==id); }); document.querySelectorAll('[data-tab]').forEach(function(a){ var on=a.dataset.tab===id; a.classList.toggle('current',on); a.setAttribute('aria-selected',on?'true':'false'); }); }
+  function tabs(){
+    document.querySelectorAll('[data-tab]').forEach(function(a){ a.addEventListener('click',function(ev){ ev.preventDefault(); var id=a.dataset.tab; showTab(id); history.replaceState(null,'','#'+id); var top=document.getElementById(id).getBoundingClientRect().top+window.scrollY-60; window.scrollTo({top:Math.max(0,top),behavior:'smooth'}); }); });
+    window.addEventListener('hashchange',function(){ showTab(tabFromHash()); var t=document.getElementById(location.hash.slice(1)); if(t) t.scrollIntoView(); });
   }
+  showTab(tabFromHash()); tabs();
 
   fetch(A1_META).then(function(r){ return r.json(); }).then(function(m){
     var cl=document.getElementById('crosslist'); (m.cross_cutting||[]).forEach(function(b){ cl.appendChild(el('li',null,b)); }); if(cl.children.length) document.getElementById('cross').hidden=false;
@@ -299,17 +308,20 @@ footer p{margin:0 0 6px}
 
   Promise.all([loadTab(TABS.midreview),loadTab(TABS.a1),fetch(DRIVE_FILES).then(function(r){ return r.json(); }).then(function(j){ return j.files||[]; }).catch(function(){ return []; }),
     fetch(REPO_PAGES).then(function(r){ return r.json(); }).then(function(j){ return j.pages||{}; }).catch(function(){ return {}; }),
-    fetch(REVIEW_CLIPS).then(function(r){ return r.json(); }).then(function(j){ return j.clips||[]; }).catch(function(){ return []; })]).then(function(res){
+    fetch(REVIEW_CLIPS).then(function(r){ return r.json(); }).then(function(j){ return j.clips||[]; }).catch(function(){ return []; }),
+    fetch(DRIVE_ACCESS).then(function(r){ return r.json(); }).then(function(j){ return j.private||[]; }).catch(function(){ return []; })]).then(function(res){
     if(!res[0].live) fallbackNote('midreview');
     if(!res[1].live) fallbackNote('a1');
-    var mid=midreviewItems(res[0].rows,res[2],res[3]), clips=res[4];
-    return Promise.all(mid.map(function(p){ var id=driveId(p.video); return id?probe(id).then(function(ok){ p.videoOk=ok; }):Promise.resolve(); })).then(function(){
+    var mid=midreviewItems(res[0].rows,res[2],res[3]), clips=res[4], privateIds=res[5];
+    // Drive files that refresh_data.sh found not shared publicly (checked server-side; the thumbnail service is too flaky to test from the browser)
+    mid.forEach(function(p){ var id=driveId(p.video); if(id&&privateIds.indexOf(id)>=0) p.videoOk=false; });
+    return Promise.resolve().then(function(){
       mid.forEach(function(p){ if(p.video&&p.videoOk!==false) return; var c=clips.filter(function(c){ return nameTokens(c.student).join(' ')===nameTokens(p.student).join(' '); })[0]; if(c&&c.video){ p.video=c.video; p.videoOk=undefined; p.fromReview=true; if(c.poster) p.poster=c.poster; p.todo=false; } });
       function ready(p){ return !p.todo&&p.video&&p.videoOk!==false; }
       mid=mid.filter(ready).concat(mid.filter(function(p){ return !ready(p); }));
-      renderList(mid,'midreview',{appLabel:'Open the app'});
-      renderList(a1Items(res[1].rows),'a1',{appLabel:'Open the tool'});
-      comments(); currentSection();
+      renderList(mid,'midreview',{appLabel:'Open the app'}); document.getElementById('n-midreview').textContent=mid.length;
+      var a1=a1Items(res[1].rows); renderList(a1,'a1',{appLabel:'Open the tool'}); document.getElementById('n-a1').textContent=a1.length;
+      comments();
       if(location.hash){ var t=document.getElementById(location.hash.slice(1)); if(t) t.scrollIntoView(); }
     });
   }).catch(function(){ document.getElementById('midreview-entries').appendChild(el('p','status-line','Could not load the submissions.')); });

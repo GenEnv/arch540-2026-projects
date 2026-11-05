@@ -11,5 +11,6 @@ Students edit their own row in the sheet; nothing in this repository has to chan
 
 - `index.html` is the whole site. The sheet id and the tab gids are in the `SHEET` and `TABS` constants at the top of the script.
 - `data/midreview.csv` and `data/assignment1.csv` are a saved copy of the two tabs, used only when the sheet cannot be reached (the page then says so). `./refresh_data.sh` updates them; commit the result.
+- `video/` and `img/` hold the clips cut from the mid-review recording (and their poster frames) for students who had no accessible video of their own; `data/review_clips.json` lists them. The page uses a clip only when the sheet and the Drive folder give nothing playable, and labels it "Clip from the mid-review recording". A release would keep the repository smaller; the files are in the repository because creating releases is blocked from the Claude session.
 - Comments posted on the page go to the same Google Form as the Assignment 1 page and are shown from its response sheet; delete a row there to remove a comment. Mid-review comments are stored with the key `<title> (mid-review)`.
 - Page views are counted by GoatCounter (site `arch540`).
