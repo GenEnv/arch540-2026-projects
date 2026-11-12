@@ -88,7 +88,7 @@ details li{margin:0 0 8px}
 .comments{margin-top:16px;border-top:1px solid var(--line);padding-top:12px;font-size:15px}
 .comments h4{font-family:var(--body);font-size:14px;font-weight:600;margin:0 0 6px;color:var(--muted)}
 .comments ul{margin:0 0 12px;padding:0;list-style:none}
-.comments li{margin:0 0 10px;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.comments li{margin:0 0 10px;padding:8px 12px;background:var(--surface);border:1px solid var(--line);border-radius:6px;white-space:pre-wrap;overflow-wrap:anywhere}
 .comments .who{display:block;color:var(--muted);font-size:13px;margin-top:3px}
 .cform textarea,.cform input{font:inherit;font-size:15px;color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
 .cform textarea{resize:vertical;display:block;margin-bottom:8px}
@@ -209,7 +209,7 @@ footer p{margin:0 0 6px}
   }
   function commentBox(key){
     var cm=el('div','comments'); cm.dataset.key=key; cm.hidden=true; cm.appendChild(el('h4',null,'Comments')); cm.appendChild(el('ul','list'));
-    var form=el('form','cform'); var ta=document.createElement('textarea'); ta.name='comment'; ta.rows=3; ta.placeholder='Your comment'; ta.required=true; form.appendChild(ta);
+    var form=el('form','cform'); var ta=document.createElement('textarea'); ta.name='comment'; ta.rows=8; ta.placeholder='Your comment or critique (paragraphs are kept)'; ta.required=true; form.appendChild(ta);
     var row=el('div','row'); var nm=document.createElement('input'); nm.name='name'; nm.type='text'; nm.placeholder='Name and affiliation (optional)'; row.appendChild(nm);
     var hp=document.createElement('input'); hp.name='website'; hp.type='text'; hp.tabIndex=-1; hp.autocomplete='off'; hp.className='hp'; row.appendChild(hp);
     var bt=el('button',null,'Post'); bt.type='submit'; row.appendChild(bt); form.appendChild(row); form.appendChild(el('p','status','')); cm.appendChild(form);
